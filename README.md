@@ -1,24 +1,23 @@
-gulp-less
+gulp-less-sourcemap
 =========
 
-A LESS plugin for Gulp
-
-[![Build Status](https://travis-ci.org/plus3network/gulp-less.png?branch=master)](https://travis-ci.org/plus3network/gulp-less)
+A LESS plugin for Gulp with sourcemap file support. Based on [gulp-less](https://github.com/plus3network/gulp-less).
 
 ## Install
 
 ```
-npm install gulp-less
+npm install gulp-less-sourcemap
 ```
 
 ## Usage
 ```javascript
-var less = require('gulp-less');
+var less = require('gulp-less-sourcemap');
 var path = require('path');
 
 gulp.task('less', function () {
   gulp.src('./less/**/*.less')
     .pipe(less({
+      generateSourceMap: true, // default true
       paths: [ path.join(__dirname, 'less', 'includes') ]
     }))
     .pipe(gulp.dest('./public/css'));
@@ -27,7 +26,7 @@ gulp.task('less', function () {
 
 ## Options
 
-The options are the same as what's supported by the less parser. Please note that this plugin only generates inline sourcemaps (with `sourceMap: true`) - specifying a `sourceMapFilename` option will do nothing.
+The options are the same as what's supported by the less parser. By default sourcemaps generation is on (`generateSourceMap: true`). To generates inline sourcemaps specify `sourceMap: true`. By default sourcemap files are written into destination folder (`sourceMapDestination: false`).
 
 ## Error handling
 
@@ -37,7 +36,7 @@ By default, a gulp task will fail and all streams will halt when an error happen
 
 (MIT License)
 
-Copyright (c) 2014 Plus 3 Network dev@plus3network.com
+Copyright (c) 2014 Alex Batalov radist2s@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

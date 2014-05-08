@@ -4,34 +4,80 @@ var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var path = require('path');
 var defaults = require('lodash.defaults');
+var fs = require('fs');
 
+/**
+ * @param {Function|Object} options
+ * @returns {*}
+ */
 module.exports = function (options) {
-  // Mixes in default options.
-  options = defaults(options || {}, {
-    compress: false,
-    paths: []
-  });
 
-  function transform (file, enc, next) {
+  function transform (lessFile, enc, next) {
     var self = this;
 
-    if (file.isNull()) {
-      this.push(file); // pass along
+    if (lessFile.isNull()) {
+      this.push(lessFile); // pass along
       return next();
     }
 
-    if (file.isStream()) {
-      this.emit('error', new PluginError('gulp-less', 'Streaming not supported'));
+    if (lessFile.isStream()) {
+      this.emit('error', new PluginError('gulp-less-sourcemap', 'Streaming not supported'));
       return next();
     }
 
-    var str = file.contents.toString('utf8');
+    var str = lessFile.contents.toString('utf8');
 
-    // Clones the options object.
-    var opts = defaults({}, options);
+    var opts = {};
+
+    if (typeof options === 'function') {
+      opts = options.apply(this, arguments);
+    }
+
+    // Mixes in default options
+    opts = defaults(
+      opts || {},
+      {
+        compress: false,
+        paths: [],
+        generateSourceMap: true,
+        sourceMapDestination: false // if false then uses same LESS file directory
+      }
+    );
+
+    if (opts.generateSourceMap) {
+      var sourcemapDestDir = opts.sourceMapDestination
+
+      if (sourcemapDestDir === false) {
+        sourcemapDestDir = path.dirname(lessFile.path)
+      }
+
+      var sourceMapFileName = gutil.replaceExtension(path.basename(lessFile.path), '.map');
+      var sourceMapFilePath = path.join(sourcemapDestDir, sourceMapFileName);
+
+      // Mixes in default sourcemap generation options
+      opts = defaults(
+        opts,
+        {
+          writeSourceMap: function (output) {
+            var sourcemapFile = new (gutil.File)({
+              cwd: lessFile.cwd,
+              base: lessFile.base,
+              path: sourceMapFilePath,
+              contents: new Buffer(output, 'utf8')
+            });
+
+            self.push(sourcemapFile);
+          },
+          sourceMapURL: sourceMapFileName,
+          sourceMap: 'yes', // if true then write inline sourcemap
+          sourceMapRootpath: '',
+          sourceMapBasepath: lessFile.base
+        }
+      );
+    }
 
     // Injects the path of the current file.
-    opts.filename = file.path;
+    opts.filename = lessFile.path;
 
     less.render(str, opts, function (err, css) {
       if (err) {
@@ -43,11 +89,11 @@ module.exports = function (options) {
         // add a better error message
         err.message = err.message + ' in file ' + err.fileName + ' line no. ' + err.lineNumber;
 
-        self.emit('error', new PluginError('gulp-less', err));
+        self.emit('error', new PluginError('gulp-less-sourcemap', err));
       } else {
-        file.contents = new Buffer(css);
-        file.path = gutil.replaceExtension(file.path, '.css');
-        self.push(file);
+        lessFile.contents = new Buffer(css, 'utf8');
+        lessFile.path = gutil.replaceExtension(lessFile.path, '.css');
+        self.push(lessFile);
       }
       next();
     });

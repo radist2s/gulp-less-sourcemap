@@ -3,6 +3,8 @@ var less = require('../');
 var gutil = require('gulp-util');
 var fs = require('fs');
 var pj = require('path').join;
+var os = require('os');
+var path = require('path');
 
 function createVinyl(lessFileName, contents) {
   var base = pj(__dirname, 'fixtures');
@@ -16,7 +18,7 @@ function createVinyl(lessFileName, contents) {
   });
 }
 
-describe('gulp-less', function () {
+describe('gulp-less-sourcemap', function () {
   describe('less()', function () {
     it('should pass file when it isNull()', function (done) {
       var stream = less();
@@ -45,16 +47,21 @@ describe('gulp-less', function () {
 
     it('should compile single less file', function (done) {
       var lessFile = createVinyl('buttons.less');
-
       var stream = less();
       stream.on('data', function (cssFile) {
+        if (path.basename(cssFile.path).match(/\.map$/)) {
+          return
+        }
+
         should.exist(cssFile);
         should.exist(cssFile.path);
         should.exist(cssFile.relative);
         should.exist(cssFile.contents);
         cssFile.path.should.equal(pj(__dirname, 'fixtures', 'buttons.css'));
-        String(cssFile.contents).should.equal(
-          fs.readFileSync(pj(__dirname, 'expect/buttons.css'), 'utf8'));
+        // replace End-of-line marker for cross OS testing
+        String(cssFile.contents).replace(/(\r\n|\n)/g, os.EOL).should.equal(
+          fs.readFileSync(pj(__dirname, 'expect/buttons.css'), 'utf8').replace(/(\r\n|\n)/g, os.EOL)
+        );
         done();
       });
       stream.write(lessFile);
