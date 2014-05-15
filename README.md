@@ -10,6 +10,8 @@ npm install gulp-less-sourcemap
 ```
 
 ## Usage
+####Simple example
+
 ```javascript
 var less = require('gulp-less-sourcemap');
 var path = require('path');
@@ -22,6 +24,49 @@ gulp.task('less', function () {
     }))
     .pipe(gulp.dest('./public/css'));
 });
+```
+
+####Advanced example:
+
+```javascript
+var gulp = require('gulp');
+var changed = require('gulp-changed');
+var less = require('gulp-less-sourcemap');
+var path = require('path');
+var fs = require('fs');
+var gutil = require('gulp-util');
+var notifier = new (require('node-notifier'));
+
+// Gulpfile is placed in project/util
+// LESS files are placed in project/app/static/css
+var lessSourceFilesBasePath = path.join('..', 'app', 'static', 'css')
+var lessSourceFiles = path.join(fs.realpathSync(lessSourceFilesBasePath), '*.less')
+
+gulp.task('less', function () {
+    var cssDestination = path.dirname(lessSourceFiles)
+
+    return gulp
+        .src(lessSourceFiles)
+            .pipe(changed(cssDestination, {extension: '.css'}))
+            .pipe(
+                less()
+            )
+            .on('error', function (error) {
+                gutil.log(gutil.colors.red(error.message))
+                // Notify on error. Uses node-notifier
+                notifier.notify({
+                    title: 'Less compilation error',
+                    message: error.message
+                })
+            })
+            .pipe(gulp.dest(cssDestination));
+});
+
+gulp.task('less-watch', function () {
+	gulp.watch(lessSourceFiles, ['less'])
+});
+
+gulp.task('default', ['less', 'less-watch']);
 ```
 
 ## Options
