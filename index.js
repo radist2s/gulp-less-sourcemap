@@ -51,7 +51,7 @@ module.exports = function (options) {
         sourcemapDestDir = path.dirname(lessFile.path)
       }
 
-      var sourceMapFileName = gutil.replaceExtension(path.basename(lessFile.path), '.map');
+      var sourceMapFileName = gutil.replaceExtension(path.basename(lessFile.path), '.css.map');
       var sourceMapFilePath = path.join(sourcemapDestDir, sourceMapFileName);
 
       // Mixes in default sourcemap generation options
