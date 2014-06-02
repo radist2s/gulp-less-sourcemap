@@ -27,15 +27,17 @@ module.exports = function (options) {
 
     var str = lessFile.contents.toString('utf8');
 
-    var opts = {};
+    var opts = options || {};
 
+    // You can pass options as callback who return generated options object
+    // based on dynamic arguments of transform function
     if (typeof options === 'function') {
-      opts = options.apply(this, arguments);
+      opts = options.apply(this, arguments) || {};
     }
 
     // Mixes in default options
     opts = defaults(
-      opts || {},
+      opts,
       {
         compress: false,
         paths: [],
