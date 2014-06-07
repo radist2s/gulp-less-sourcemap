@@ -1,6 +1,6 @@
 {
   "name": "gulp-less-sourcemap",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Less for Gulp with source map generation support",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,8 @@
   "keywords": [
     "gulpplugin",
     "gulp",
-    "less"
+    "less",
+    "sourcemap"
   ],
   "author": "Alex Batalov",
   "license": "MIT",

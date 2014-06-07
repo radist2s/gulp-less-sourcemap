@@ -71,7 +71,7 @@ gulp.task('default', ['less', 'less-watch']);
 
 ## Options
 
-The options are the same as what's supported by the less parser. By default sourcemaps generation is on (`generateSourceMap: true`). To generates inline sourcemaps specify `sourceMap: true`. By default sourcemap files are written into destination folder (`sourceMapDestination: false`).
+The options are the same as what's supported by the less parser. By default sourcemaps generation is on (`generateSourceMap: true`). Sourcemaps files be written into destination directory. To generates inline sourcemaps specify `sourceMap: true`.
 
 ## Error handling
 

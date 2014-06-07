@@ -35,26 +35,22 @@ module.exports = function (options) {
       opts = options.apply(this, arguments) || {};
     }
 
+    // Clone default options
+    opts = defaults({}, opts)
+
     // Mixes in default options
     opts = defaults(
       opts,
       {
         compress: false,
         paths: [],
-        generateSourceMap: true,
-        sourceMapDestination: false // if false then uses same LESS file directory
+        generateSourceMap: true
       }
     );
 
     if (opts.generateSourceMap) {
-      var sourcemapDestDir = opts.sourceMapDestination
-
-      if (sourcemapDestDir === false) {
-        sourcemapDestDir = path.dirname(lessFile.path)
-      }
-
       var sourceMapFileName = gutil.replaceExtension(path.basename(lessFile.path), '.css.map');
-      var sourceMapFilePath = path.join(sourcemapDestDir, sourceMapFileName);
+      var sourceMapFilePath = path.join(path.dirname(lessFile.path), sourceMapFileName);
 
       // Mixes in default sourcemap generation options
       opts = defaults(
