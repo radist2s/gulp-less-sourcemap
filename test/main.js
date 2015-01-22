@@ -57,7 +57,7 @@ describe('gulp-less-sourcemap', function () {
         should.exist(cssFile.path);
         should.exist(cssFile.relative);
         should.exist(cssFile.contents);
-        cssFile.path.should.equal(pj(__dirname, 'fixtures', 'buttons.css'));
+
         // replace End-of-line marker for cross OS testing
         String(cssFile.contents).replace(/(\r\n|\n)/g, os.EOL).should.equal(
           fs.readFileSync(pj(__dirname, 'expect/buttons.css'), 'utf8').replace(/(\r\n|\n)/g, os.EOL)

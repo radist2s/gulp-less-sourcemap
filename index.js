@@ -6,6 +6,8 @@ var path = require('path');
 var defaults = require('lodash.defaults');
 var fs = require('fs');
 
+const PLUGIN_NAME = 'gulp-less-sourcemap';
+
 /**
  * @param {Function|Object} options
  * @returns {*}
@@ -25,8 +27,9 @@ module.exports = function (options) {
       return next();
     }
 
-    var str = lessFile.contents.toString('utf8');
-
+    var lessCode = lessFile.contents.toString('utf8');
+    var lessSourceFilename = path.basename(lessFile.path);
+    var sourceMapFileName = gutil.replaceExtension(lessSourceFilename, '.css.map');
     var opts = options || {};
 
     // You can pass options as callback who return generated options object
@@ -36,50 +39,54 @@ module.exports = function (options) {
     }
 
     // Clone default options
-    opts = defaults({}, opts)
+    opts = defaults({}, opts);
+
+    var sourceMapOpts = {
+      sourceMapURL: sourceMapFileName,
+      sourceMapBasepath: lessFile.base,
+      sourceMapRootpath: '',
+      sourceMapFileInline: false
+    };
+
+    if (opts.sourceMap instanceof Object) {
+      // First defaults sourceMap options
+      defaults(opts.sourceMap, sourceMapOpts)
+    }
 
     // Mixes in default options
     opts = defaults(
       opts,
       {
-        compress: false,
-        paths: [],
-        generateSourceMap: true
+        sourceMap: sourceMapOpts
       }
     );
 
-    if (opts.generateSourceMap) {
-      var sourceMapFileName = gutil.replaceExtension(path.basename(lessFile.path), '.css.map');
-      var sourceMapFilePath = path.join(path.dirname(lessFile.path), sourceMapFileName);
-
-      // Mixes in default sourcemap generation options
-      opts = defaults(
-        opts,
-        {
-          writeSourceMap: function (output) {
-            var sourcemapFile = new (gutil.File)({
-              cwd: lessFile.cwd,
-              base: lessFile.base,
-              path: sourceMapFilePath,
-              contents: new Buffer(output, 'utf8')
-            });
-
-            self.push(sourcemapFile);
-          },
-          sourceMapURL: sourceMapFileName,
-          sourceMap: 'yes', // if true then write inline sourcemap
-          sourceMapRootpath: '',
-          sourceMapBasepath: lessFile.base
-        }
-      );
-    }
-
-    // Injects the path of the current file.
+    // Injects the path of the current file, this file will passed to LESS
     opts.filename = lessFile.path;
 
-    less.render(str, opts, function (err, css) {
-      if (err) {
+    less.render(lessCode, opts).then(
+      // Success
+      function (output) {
+        var cssFile = new (gutil.File)({
+          path: gutil.replaceExtension(lessSourceFilename, '.css'),
+          contents: new Buffer(output.css, 'utf8')
+        });
 
+        self.push(cssFile);
+
+        if (output.map) {
+          var sourcemapFile = new (gutil.File)({
+            path: sourceMapFileName,
+            contents: new Buffer(output.map, 'utf8')
+          });
+
+          self.push(sourcemapFile);
+        }
+
+        next();
+      },
+      // Error
+      function (err) {
         // convert the keys so PluginError can read them
         err.lineNumber = err.line;
         err.fileName = err.filename;
@@ -88,13 +95,10 @@ module.exports = function (options) {
         err.message = err.message + ' in file ' + err.fileName + ' line no. ' + err.lineNumber;
 
         self.emit('error', new PluginError('gulp-less-sourcemap', err));
-      } else {
-        lessFile.contents = new Buffer(css, 'utf8');
-        lessFile.path = gutil.replaceExtension(lessFile.path, '.css');
-        self.push(lessFile);
+
+        next();
       }
-      next();
-    });
+    );
   }
 
   return through2.obj(transform);

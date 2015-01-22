@@ -13,15 +13,13 @@ npm install gulp-less-sourcemap
 ####Simple example
 
 ```javascript
+var gulp = require('gulp');
 var less = require('gulp-less-sourcemap');
 var path = require('path');
 
 gulp.task('less', function () {
   gulp.src('./less/**/*.less')
-    .pipe(less({
-      generateSourceMap: true, // default true
-      paths: [ path.join(__dirname, 'less', 'includes') ]
-    }))
+    .pipe(less())
     .pipe(gulp.dest('./public/css'));
 });
 ```
@@ -49,7 +47,16 @@ gulp.task('less', function () {
         .src(lessSourceFiles)
             .pipe(changed(cssDestination, {extension: '.css'}))
             .pipe(
-                less()
+                less({
+                    /*
+                    sourceMap: {
+                        sourceMapURL: sourceMapFileName,
+                        sourceMapBasepath: lessFile.base,
+                        sourceMapRootpath: '',
+                        sourceMapFileInline: false
+                    }
+                    */
+                })
             )
             .on('error', function (error) {
                 gutil.log(gutil.colors.red(error.message))
@@ -71,7 +78,7 @@ gulp.task('default', ['less', 'less-watch']);
 
 ## Options
 
-The options are the same as what's supported by the less parser. By default sourcemaps generation is on (`generateSourceMap: true`). Sourcemaps files be written into destination directory. To generates inline sourcemaps specify `sourceMap: true`.
+The options are the same as what's supported by the less parser. By default sourcemaps generation is on. Sourcemaps files be written into destination directory. To generates inline sourcemaps specify `{sourceMap: {sourceMapFileInline: true}}`.
 
 ## Error handling
 
