@@ -19,7 +19,11 @@ var path = require('path');
 
 gulp.task('less', function () {
   gulp.src('./less/**/*.less')
-    .pipe(less())
+    .pipe(less(
+        sourceMap: {
+            sourceMapRootpath: '../less' // Optional absolute or relative path to your LESS files
+        }
+    ))
     .pipe(gulp.dest('./public/css'));
 });
 ```
@@ -52,7 +56,7 @@ gulp.task('less', function () {
                     sourceMap: {
                         sourceMapURL: sourceMapFileName,
                         sourceMapBasepath: lessFile.base,
-                        sourceMapRootpath: '',
+                        sourceMapRootpath: '../less', // Optional absolute or relative path to your LESS files
                         sourceMapFileInline: false
                     }
                     */

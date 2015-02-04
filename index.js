@@ -49,17 +49,12 @@ module.exports = function (options) {
     };
 
     if (opts.sourceMap instanceof Object) {
-      // First defaults sourceMap options
-      defaults(opts.sourceMap, sourceMapOpts)
+      // First defaults sourceMap options and clone sourceMap object(Lodash.defaults doesn't recursive cloning)
+      opts.sourceMap = defaults({}, opts.sourceMap, sourceMapOpts);
     }
 
     // Mixes in default options
-    opts = defaults(
-      opts,
-      {
-        sourceMap: sourceMapOpts
-      }
-    );
+    opts = defaults(opts, {sourceMap: sourceMapOpts});
 
     // Injects the path of the current file, this file will passed to LESS
     opts.filename = lessFile.path;
