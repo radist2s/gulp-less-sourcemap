@@ -18,7 +18,7 @@ var less = require('gulp-less-sourcemap');
 var path = require('path');
 
 gulp.task('less', function () {
-  gulp.src('./less/**/*.less')
+  gulp.src('./less/*.less')
     .pipe(less({
         sourceMap: {
             sourceMapRootpath: '../less' // Optional absolute or relative path to your LESS files

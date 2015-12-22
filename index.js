@@ -4,7 +4,6 @@ var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var path = require('path');
 var defaults = require('lodash.defaults');
-var fs = require('fs');
 
 const PLUGIN_NAME = 'gulp-less-sourcemap';
 
@@ -28,8 +27,7 @@ module.exports = function (options) {
     }
 
     var lessCode = lessFile.contents.toString('utf8');
-    var lessSourceFilename = path.basename(lessFile.path);
-    var sourceMapFileName = gutil.replaceExtension(lessSourceFilename, '.css.map');
+    var sourceMapFileName = gutil.replaceExtension(path.basename(lessFile.path), '.css.map');
     var opts = options || {};
 
     // You can pass options as callback who return generated options object
@@ -56,14 +54,23 @@ module.exports = function (options) {
     // Mixes in default options
     opts = defaults(opts, {sourceMap: sourceMapOpts});
 
-    // Injects the path of the current file, this file will passed to LESS
+    sourceMapOpts = opts.sourceMap;
+
+    var sourceMapFileDir = path.relative(sourceMapOpts.sourceMapBasepath, path.dirname(lessFile.path));
+
+    sourceMapOpts.sourceMapRootpath = path.join(
+      path.relative(path.dirname(lessFile.path), lessFile.base), // Add relative path to less file basedir for sourceMapRootpath
+      sourceMapOpts.sourceMapRootpath
+    );
+
+    // Injects the path of the current file, that file will be passed to LESS
     opts.filename = lessFile.path;
 
     less.render(lessCode, opts).then(
       // Success
       function (output) {
         var cssFile = new (gutil.File)({
-          path: gutil.replaceExtension(lessSourceFilename, '.css'),
+          path: gutil.replaceExtension(path.relative(lessFile.base, lessFile.path), '.css'),
           contents: new Buffer(output.css, 'utf8')
         });
 
@@ -71,7 +78,7 @@ module.exports = function (options) {
 
         if (output.map) {
           var sourcemapFile = new (gutil.File)({
-            path: sourceMapFileName,
+            path: path.join(sourceMapFileDir, path.basename(sourceMapOpts.sourceMapURL)),
             contents: new Buffer(output.map, 'utf8')
           });
 

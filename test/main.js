@@ -95,10 +95,15 @@ describe('gulp-less-sourcemap', function () {
           done();
         }
       });
+
+      var completedFiles = []
+
       stream.on('data', function (cssFile) {
         dataHandled = true;
         if (errorHandled) {
-          done();
+          if (/\.map$/.test(cssFile.path)) {
+            done();
+          }
         }
       });
       stream.write(errorFile);
@@ -109,7 +114,8 @@ describe('gulp-less-sourcemap', function () {
       var files = [
         createVinyl('buttons.less'),
         createVinyl('forms.less'),
-        createVinyl('normalize.less')
+        createVinyl('normalize.less'),
+        createVinyl('subfolder/subfolder-buttons.less'),
       ];
 
       var stream = less();
