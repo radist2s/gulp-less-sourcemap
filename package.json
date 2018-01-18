@@ -1,6 +1,6 @@
 {
   "name": "gulp-less-sourcemap",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Less for Gulp with source map generation support",
   "main": "index.js",
   "scripts": {

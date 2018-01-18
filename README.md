@@ -1,3 +1,5 @@
+##### DEPRECATED in favour of [gulp-less](https://github.com/stevelacy/gulp-less)
+
 gulp-less-sourcemap
 =========
 
